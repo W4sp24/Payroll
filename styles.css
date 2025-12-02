@@ -1,0 +1,24 @@
+:root {
+  margin: 1vh auto;
+  width: 350px;
+}
+
+body {
+    margin: 20px;
+    font-family: Arial;
+    background-color:cornsilk;
+}
+
+button {
+  display: block;
+  margin: 1vh auto;
+}
+
+#company {
+    font-family: Verdana; 
+    text-align: center;
+}
+
+#attendance-form {
+    line-height: 2;
+}
