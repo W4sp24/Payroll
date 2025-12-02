@@ -1,33 +1,21 @@
-
-
 <?php
 //SQL CONNECTION ------------------------------------------------------
-$host = 'localhost';          
-$db   = 'your_database_name';
-$user = 'your_db_user';
-$pass = 'your_db_password';
-$dsn  = "mysql:host=$host;dbname=$db"; 
+$user = 'root';
+$password = '';
+$database = 'restaurant';
+$servername = 'localhost:3306'; 
 
-try {
+$mysqli = new mysqli($servername, $user, $password, $database);
 
-    $pdo = new PDO($dsn, $user, $pass);
+if ($mysqli->connect_error) {
     
-
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-
-    die("Connection failed: " . $e->getMessage());
+    die('Connect Error(' . $mysqli->connect_errno . ')' . $mysqli->connect_error);
 }
-//SQL CONNECTION ------------------------------------------------------
-
-print("Hello world");
 
 
 
 
 
+
+$mysqli->close();
 ?>
