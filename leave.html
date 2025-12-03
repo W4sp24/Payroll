@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Attendance Checker</title>
+</head>
+
+<body>
+  <h1 id="company">File a leave here:</h1>
+  <div>
+      <form action="" method="post" id="attendance-form">
+      <fieldset>
+      <label for="reason">State your reasons for this leave.</label>
+      <br>
+      <textarea id="reason" rows="6" cols="34" required></textarea>
+      <br>
+      <input type="checkbox" id="check" required />
+      <label for="check">I'm confirming this</label>
+      </fieldset>
+      <h3>We will get back to you eventually.</h3>
+      <button type="submit" value="submit">Submit</button>
+      <button type="leave" onclick="document.location='user.html'">Return to the menu</button>
+    </form>
+  </div>
+</body>
+
+</html>
