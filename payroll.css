@@ -1,0 +1,52 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.employee-payroll-table {
+    margin: 200px auto;
+    width: 80%;
+    border-collapse: collapse;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border: 1px solid #ddd;
+}
+
+h1 {
+    text-align:center;
+    margin-top:50px;
+    margin-bottom:0;
+}
+
+
+.table-wrapper {
+                display: flex;
+                justify-content: center; /* center horizontally */
+                padding: 12px 0;
+            }
+            .employee-payroll-table {
+                width: 100%;
+                max-width: 820px;
+                margin: 0 auto;
+                border-collapse: collapse;
+                background: #fff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 14px rgba(16,24,40,0.06);
+            }
+            .employee-payroll-table th,
+            .employee-payroll-table td {
+                padding: 10px 14px;
+                text-align: left;
+                border-bottom: 1px solid #eef2f7;
+                font-size: 14px;
+                color: #1f2937;
+            }
+            .employee-payroll-table th {
+                background: #fafafa;
+                font-weight: 600;
+            }
+            @media (max-width: 520px) {
+                .employee-payroll-table th,
+                .employee-payroll-table td { padding: 8px; font-size: 13px; }
+            }

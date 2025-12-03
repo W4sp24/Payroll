@@ -1,0 +1,107 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #e3e3e3;
+}
+
+.nav-bar {
+    background-color: black;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-elements {
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.nav-elements > li {
+    display: flex;
+    align-items: center;
+    margin-right: 40px;
+    margin-left: 40px;
+}
+
+.nav-elements a {
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    color: white;
+    font-size: 20px;
+    border: 1px solid white;
+    border-radius: 20px;
+}
+
+.util-container {
+    margin-top:50px;
+    border:1px solid black;
+    display:flex;
+    justify-content: center;
+    gap:100px
+}
+
+
+
+
+/* Replace fixed .table sizing with a responsive card that holds an inner <table> */
+.table-wrapper {
+    display: flex;
+    flex-direction:column;
+
+    width: 100%;
+    max-width: 720px;
+    height:500px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+    overflow: hidden;
+}
+.table {
+    width: 100%;
+    max-width: 820px;
+    margin: 0 auto;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(16,24,40,0.06);
+}
+.table th,.table td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #eef2f7;
+    font-size: 14px;
+    color: #1f2937;
+}
+.table th {
+    background: #fafafa;
+    font-weight: 600;
+}
+@media (max-width: 520px) {
+    .table th,
+    .table td { padding: 8px; font-size: 13px; }
+}
+
+.table-action-section {
+    display: flex;
+    flex-direction:column;
+    width:600px;
+    align-items:center;
+}
+
+.actions{
+    margin-top:20px;
+}
+
+.actions form  {
+    margin-bottom:10px;
+}
