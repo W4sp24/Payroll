@@ -31,6 +31,7 @@ try {
         <link rel="stylesheet" href="employee.css">
     </head>
     <body>
+        <div class='return-button'><a href='/Payroll/admin.php'><button>Return </button></a></div>
         <div class='container-tables'>
             <div class='table-employees'>
                 <div class="table-wrapper">
@@ -68,14 +69,14 @@ try {
                                 if (!empty($results)) {
                                     foreach ($results as $row) {
                                         echo '<tr>';
-                                        // This loop automatically prints the 4 columns selected in the query
+                                
                                         foreach ($row as $cell) {
                                             echo '<td>' . htmlspecialchars($cell) . '</td>';
                                         }
                                         echo '</tr>';
                                     }
                                 } else {
-                                    // Changed colspan to 4 because we now have 4 headers
+                                  
                                     echo '<tr><td colspan="4">No employees found</td></tr>';
                                 }
                             } catch (\PDOException $e) {

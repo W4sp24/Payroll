@@ -23,6 +23,7 @@ try {
 }
 
 $tableName = 'payroll_computation_table';
+$totalExpense = 0;
 // Generate Payroll Logic
 if (isset($_GET['action']) && $_GET['action'] === 'generate') {
 
@@ -54,6 +55,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'generate') {
         ]); 
 
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $sumSql = 'SELECT 
+                    SUM(ROUND(monthly_salary + total_incentives + total_paid_leaves, 2)) AS total_expense 
+                   FROM payroll_view 
+                   WHERE Pay_Period = :period 
+                   AND Pay_Month = :month 
+                   AND Pay_Year = :year';
+
+        $sumStmt = $pdo->prepare($sumSql);
+        $sumStmt->execute([
+            'period' => $selectedPeriod,
+            'month'  => $selectedMonth,
+            'year'   => $selectedYear
+        ]);
+
+        $sumResult = $sumStmt->fetch(PDO::FETCH_ASSOC);
+        $totalExpense = $sumResult['total_expense'] ?? 0;
+
     } else {
         $error = "Please select both a month and a period.";
     }
@@ -164,31 +183,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <input type="hidden" name="h_period" value="<?php echo $selectedPeriod; ?>">
                 <button>Process</button>
             </form>
-
-        <div>
+        </div>
+        <div class=total-payroll-container><h3>Total Payroll: ₱<?php echo number_format($totalExpense, 2); ?> </h3></div>
     <?php elseif (isset($_GET['action'])): ?>
         <div style="text-align:center; color: red;">
             <p>No records found for this period.</p>
         </div>
-    <?php elseif ($action === 'deleteDepartment'): ?>
-        <div class='form-container'>
-            <h2 style="color: #d32f2f;">Delete Department</h2>
-            
-            <div style="background-color: #fff3cd; padding: 10px; border: 1px solid #ffeeba; margin-bottom: 15px; color: #856404; font-size: 0.9em;">
-                <strong>Warning:</strong> Deleting a department is irreversible. Ensure no employees are assigned to it first.
-            </div>
-
-            <form method="POST" action="data_manipulation.php?action=deleteDepartment">
-                <input type="hidden" name="actionSQL" value="deleteDepartment">
-                
-                <label>Enter Department ID to Delete:</label>
-                <div style="display:flex; gap:10px;">
-                    <input type="number" name="dept_id" required placeholder="e.g. 3">
-                    <button type="submit" style="background-color: #d32f2f;">Delete Permanently</button>
-                </div>
-            </form>
-        </div>
-        <?php endif; ?>
+    <?php endif; ?>
+    
 
 
 </body>   
