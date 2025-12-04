@@ -8,7 +8,6 @@ $port = '3306';
 $charset = 'utf8mb4';
 $dsn = "mysql:host=$servername;port=$port;dbname=$database;charset=$charset";
 
-
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, 
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,     
@@ -21,12 +20,7 @@ try {
 
     die('Connection Error: ' . $e->getMessage());
 }
-
-
-
-
 // Data manipulation logic
-
 if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $employee_id = $_POST['id'] ?? $_POST['emp_id'] ?? null; // to avoid invalid data type input
@@ -53,16 +47,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-
-
-
-
-
-
-
 ?>
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -88,7 +73,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <caption>Recent Leave Request   </caption>
                         <thead>
                             <tr>
-                                <th>EMP ID</th>
+                                <th>LVE ID</th>
                                 <th>EMP NAME</th>
                                 <th>STATUS</th>
                             </tr>
@@ -98,7 +83,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                             try {
                                 $stmt = $pdo->query("
                                     SELECT
-                                        lr.EMP_ID,
+                                        lr.LVE_ID,
                                         e.EMP_NAME,
                                         lr.LVE_STATUS
                                     FROM
@@ -106,7 +91,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     LEFT JOIN
                                         employee AS e ON lr.EMP_ID = e.EMP_ID
                                     ORDER BY
-                                        lr.EMP_ID DESC
+                                        LVE_ID DESC
                                     LIMIT 50
                                     ");
                                 
@@ -132,22 +117,18 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div class='actions'>
                         <form action ='/Payroll/admin.php?action=approve' method='post'>
-                            <label for='emp-id-input'>EMPLOYEE ID:</label>
+                            <label for='emp-id-input'>LVE ID:</label>
                             <input type='text' id='emp-id-input' name='id'/>
                             <button type='submit'>Approve Leave</button>
                         </form>
                         <form action ='/Payroll/admin.php?action=reject' method='post'>
-                            <label for='emp-id-input'>EMPLOYEE ID:</label>
+                            <label for='emp-id-input'>LVE ID:</label>
                             <input type='text' id='emp-id-input' name='emp_id'/>
                             <button type='submit'>Reject Leave</button>
                         </form>
                 </div>
             </div>
-
-            
         </div>
     </header>
-    
 </body>
-
 </html>

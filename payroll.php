@@ -123,6 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 </head>
 <body>
     <!-- add a wrapper and class to the form so CSS can target it -->
+     <div class='back-btn'><a href='/Payroll/admin.php'><button>Back</button></a></div>
     <div class="form-container">
         <form class="payroll-form" action='payroll.php' method='GET'>
             <input type="hidden" name="action" value="generate">
