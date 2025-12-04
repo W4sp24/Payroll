@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
 
-            // Fetch emp_id explicitly
+ 
             $stmt = $pdo->prepare('SELECT id, emp_id, password FROM users WHERE username = ? LIMIT 1');
             $stmt->execute([$username]);
             $row = $stmt->fetch();
@@ -39,8 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['user_id'] = $row['id'];
                     $_SESSION['username'] = $username;
                     
-                    // FIX: strictly use the database value. 
-                    // If it is NULL, the user is not an employee.
+           
                     $_SESSION['emp_id'] = $row['emp_id']; 
                     
                     header('Location: user.php');
