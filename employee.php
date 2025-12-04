@@ -20,6 +20,7 @@ try {
 
     die('Connection Error: ' . $e->getMessage());
 }
+
 ?>
 
 
@@ -34,7 +35,7 @@ try {
             <div class='table-employees'>
                 <div class="table-wrapper">
                     <table class="table">
-                        <caption>Employee List</caption>
+                        <caption>Active Employee List</caption>
                         <thead>
                             <tr>
                                 <th>EMP ID</th>
@@ -62,7 +63,6 @@ try {
                                         status = 'ACTIVE'
                                 ");
                                 
-                                // IMPORTANT: Use FETCH_ASSOC so we don't get duplicate columns in the loop
                                 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 
                                 if (!empty($results)) {
@@ -98,9 +98,6 @@ try {
                         <tbody>
                             <?php
                             try {
-                                // 1. UPDATED QUERY
-                                // We select * (all columns). 
-                                // Make sure your <th> tags above match the number of columns in your DB.
                                 $stmt = $pdo->query("SELECT * FROM department");
                                 
                                 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -108,17 +105,13 @@ try {
                                 if (!empty($results)) {
                                     foreach ($results as $row) {
                                         echo '<tr>';
-                                        // 2. THE LOOP
-                                        // This generic loop is perfect. It will automatically create a <td>
-                                        // for every column found in the 'department' table.
+                             
                                         foreach ($row as $cell) {
                                             echo '<td>' . htmlspecialchars($cell) . '</td>';
                                         }
                                         echo '</tr>';
                                     }
                                 } else {
-                                    // 3. UPDATED COLSPAN
-                                    // Change this number to match the number of columns in your department table
                                     echo '<tr><td colspan="2">No departments found</td></tr>';
                                 }
                             } catch (\PDOException $e) {
@@ -129,9 +122,83 @@ try {
                     </table>
                 </div>
             </div>
+            <div class='table-employees'>
+                <div class="table-wrapper">
+                    <table class="table">
+                        <caption>Job Position List</caption>
+                        <thead>
+                            <tr>
+                                <th>Position ID</th>
+                                <th>Job Position</th>
+                                <th>Job Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            try {
+                                // 1. YOUR NEW QUERY
+                                // Note: I used single quotes for the space ' ' to keep the PHP string clean
+                                $stmt = $pdo->query("
+                                    SELECT 
+                                        JP_ID as 'Position ID', 
+                                        CONCAT(JP_LEVEL, ' ', JP_NAME) as 'Job_Position', 
+                                        JP_TYPE as 'Job_Type' 
+                                    FROM job_position
+                                ");
+                                
+                                $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                
+                                if (!empty($results)) {
+                                    foreach ($results as $row) {
+                                        echo '<tr>';
+                                        // This generic loop automatically outputs your 3 new columns
+                                        foreach ($row as $cell) {
+                                            echo '<td>' . htmlspecialchars($cell) . '</td>';
+                                        }
+                                        echo '</tr>';
+                                    }
+                                } else {
+                                    // 2. UPDATED COLSPAN to 3
+                                    echo '<tr><td colspan="3">No job positions found</td></tr>';
+                                }
+                            } catch (\PDOException $e) {
+                                // 3. UPDATED COLSPAN to 3
+                                echo '<tr><td colspan="3">Error: ' . htmlspecialchars($e->getMessage()) . '</td></tr>';
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         <div class='data-manipulation'>
-            
+            <div class='action-button'>
+                <a href='data_manipulation.php?action=addEmployee'><button>Add Employee</button></a>
+            </div>
+            <div class='action-button'>
+                <a href='data_manipulation.php?action=fireEmployee'><button>Fire Employee</button></a>
+            </div>
+            <div class='action-button'>
+                <a href='data_manipulation.php?action=updateEmployee'><button>Update Employee</button></a>
+            </div>
+            <div class='action-button'>
+                <a href='data_manipulation.php?action=addDepartment'><button>Add Department</button></a>
+            </div>
+            <div class='action-button'>
+                <a href='data_manipulation.php?action=updateDepartment'><button>Update Department</button></a>
+            </div>
+            <div class='action-button'>
+                <a href='data_manipulation.php?action=deleteDepartment'><button>Delete Job Department</button></a>
+            </div>
+            <div class='action-button'>
+                <a href='data_manipulation.php?action=addJobPosition'><button>Add Job Position</button></a>
+            </div>
+            <div class='action-button'>
+                <a href='data_manipulation.php?action=updateJobPosition'><button>Update Job Position</button></a>
+            </div>
+            <div class='action-button'>
+                <a href='data_manipulation.php?action=deleteJobPosition'><button>Delete Job Position</button></a>
+            </div>
         </div>
 
     </body>

@@ -112,6 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             echo "<script>alert('Database Error: " . addslashes($e->getMessage()) . "');</script>";
         }
     }
+    
 }
 ?>
 <!DOCTYPE html>
@@ -122,7 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 </head>
 <body>
-    <!-- add a wrapper and class to the form so CSS can target it -->
      <div class='back-btn'><a href='/Payroll/admin.php'><button>Back</button></a></div>
     <div class="form-container">
         <form class="payroll-form" action='payroll.php' method='GET'>
@@ -150,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         <tr>
                             <td><?php echo htmlspecialchars($row['Employee ID']); ?></td>
                             <td><?php echo htmlspecialchars($row['Employee_Name']); ?></td>
-                            <td>$<?php echo number_format($row['Gross Salary'], 2); ?></td>
+                            <td>₱<?php echo number_format($row['Gross Salary'], 2); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -170,7 +170,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <div style="text-align:center; color: red;">
             <p>No records found for this period.</p>
         </div>
-    <?php endif; ?>
+    <?php elseif ($action === 'deleteDepartment'): ?>
+        <div class='form-container'>
+            <h2 style="color: #d32f2f;">Delete Department</h2>
+            
+            <div style="background-color: #fff3cd; padding: 10px; border: 1px solid #ffeeba; margin-bottom: 15px; color: #856404; font-size: 0.9em;">
+                <strong>Warning:</strong> Deleting a department is irreversible. Ensure no employees are assigned to it first.
+            </div>
+
+            <form method="POST" action="data_manipulation.php?action=deleteDepartment">
+                <input type="hidden" name="actionSQL" value="deleteDepartment">
+                
+                <label>Enter Department ID to Delete:</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="number" name="dept_id" required placeholder="e.g. 3">
+                    <button type="submit" style="background-color: #d32f2f;">Delete Permanently</button>
+                </div>
+            </form>
+        </div>
+        <?php endif; ?>
 
 
 </body>   
