@@ -30,7 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
 
             // Use prepared statements to avoid SQL injection
-            $stmt = $pdo->prepare('SELECT id, password FROM users WHERE username = ? LIMIT 1');
+            $stmt = $pdo->prepare('SELECT id, emp_id, password FROM users WHERE username = ? LIMIT 1');
+
             $stmt->execute([$username]);
             $row = $stmt->fetch();
 
@@ -41,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $row['id'];
                     // If users table has emp_id column:
-                    $_SESSION['emp_id'] = $row['emp_id']; // <-- required by leave.php
+                    $_SESSION['emp_id'] = $row['emp_id']; //required by leave.php
                     $_SESSION['username'] = $username;
                     header('Location: user.html');
                 exit;

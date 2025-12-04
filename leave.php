@@ -1,17 +1,16 @@
 <?php
 session_start();
 
-// --- Basic auth check ---
+// Basic auth check
 if (!isset($_SESSION['emp_id'])) {
-    // If you still only have users.id, adapt login.php to also set emp_id in session.
-    // For now, redirect to login.
+    
     header('Location: login.php');
     exit;
 }
 
 $emp_id = (int) $_SESSION['emp_id'];
 
-// --- DB connection (reuse your connection settings) ---
+// DB connection (reuse your connection settings) 
 $dbUser = 'root';
 $dbPass = '';
 $dbName = 'project';
@@ -32,12 +31,12 @@ try {
     die('DB Connection failed: ' . $e->getMessage());
 }
 
-// Helper: sanitize POST
+
 function post($key) {
     return isset($_POST[$key]) ? trim($_POST[$key]) : null;
 }
 
-// --- Handle form submissions: create / update / delete ---
+
 $errors = [];
 $messages = [];
 
@@ -45,10 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = post('action') ?? '';
 
     if ($action === 'create') {
-        // required fields: lve_type, lve_start_date (or duration), reason
+        
         $lve_type = post('lve_type') ?: 'UNPAID';
         $lve_start_date = post('lve_start_date') ?: date('Y-m-d');
-        $lve_duration = post('lve_duration') ?: '00:00:00'; // store duration as TIME if you like
+        $lve_duration = post('lve_duration') ?: '00:00:00'; 
         $lve_reason = post('reason') ?: '';
 
         if ($lve_reason === '') {
@@ -127,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// --- For edit form prefill (GET ?edit=ID) ---
+//For edit form prefill (GET ?edit=ID)
 $editing = false;
 $edit_row = null;
 if (isset($_GET['edit'])) {
@@ -143,7 +142,7 @@ if (isset($_GET['edit'])) {
     }
 }
 
-// --- Fetch user's leaves ---
+//Fetch user's leaves
 $stmt = $pdo->prepare("SELECT lr.*, e.EMP_NAME
                        FROM leave_request lr
                        LEFT JOIN employee e ON lr.EMP_ID = e.EMP_ID
