@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Database connection settings: adjust as needed
 $dbUser = 'root';
 $dbPass = '';
 $dbName = 'project';
@@ -29,26 +28,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
 
-            // Fetch emp_id if it exists
+            // Fetch emp_id explicitly
             $stmt = $pdo->prepare('SELECT id, emp_id, password FROM users WHERE username = ? LIMIT 1');
-
             $stmt->execute([$username]);
             $row = $stmt->fetch();
 
             if ($row) {
-                $passwordHash = $row['password'];
-                if (password_verify($passwordInput, $passwordHash)) {
+                if (password_verify($passwordInput, $row['password'])) {
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $row['id'];
                     $_SESSION['username'] = $username;
                     
-                    // FIX: Ensure emp_id is set even if NULL in database
-                    // If emp_id is null, we fall back to the user ID to prevent session errors in leave.php
-                    $_SESSION['emp_id'] = !empty($row['emp_id']) ? $row['emp_id'] : $row['id'];
+                    // FIX: strictly use the database value. 
+                    // If it is NULL, the user is not an employee.
+                    $_SESSION['emp_id'] = $row['emp_id']; 
                     
                     header('Location: user.php');
                     exit;
-
                 } else {
                     $error = 'Invalid username or password.';
                 }
@@ -70,10 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <style>
         body{font-family:Arial,Helvetica,sans-serif;padding:2rem}
         form{max-width:320px;margin:0 auto}
-        .error{color:#a00;margin-bottom:1rem}
+        .error{color:#a00;margin-bottom:1rem; padding: 10px; background: #fee; border: 1px solid #edd;}
         label{display:block;margin:.5rem 0 0.2rem}
-        input[type="text"],input[type="password"]{width:100%;padding:.5rem}
-        button{margin-top:1rem;padding:.5rem 1rem}
+        input[type="text"],input[type="password"]{width:100%;padding:.5rem; box-sizing: border-box;}
+        button{margin-top:1rem;padding:.5rem 1rem; width: 100%; cursor: pointer;}
     </style>
 </head>
 <body>
