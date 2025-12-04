@@ -1,4 +1,7 @@
 <?php 
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 // 1. DATABASE CONNECTION
 $user = 'root'; 
 $password = ''; 
@@ -16,6 +19,8 @@ $errorMessage = "";
 $employeeData = null; 
 $deptData = null;
 $jobData = null;
+
+
 
 // --- FETCH LOGIC: EMPLOYEE ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btn_fetch'])) {
@@ -84,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actionSQL'])) {
     elseif ($actionSQL === 'fireEmployee') {
         $emp_id = $_POST['emp_id'];
         try {
-            $stmt = $pdo->prepare("UPDATE employee SET status = 'INACTIVE' WHERE EMP_ID = :id");
+            $stmt = $pdo->prepare("UPDATE employee SET status = 'INACTIVE', DEPT_ID = null, JP_ID = null WHERE EMP_ID = :id");
             $stmt->execute(['id' => $emp_id]);
             if ($stmt->rowCount() > 0) { header('Location: employee.php?msg=fired'); exit; } 
             else { $errorMessage = "<strong>Error:</strong> No employee found with ID: " . htmlspecialchars($emp_id); }
