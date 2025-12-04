@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Database connection settings (matches `payroll.php` style)
+// Database connection settings: adjust as needed
 $dbUser = 'root';
 $dbPass = '';
 $dbName = 'project';
