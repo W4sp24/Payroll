@@ -21,7 +21,7 @@ if (empty($_SESSION['user_id'])) {
       <button type="timeout" value="timeout">Time Out</button>
       <button type="leave" onclick="document.location='leave.php'">File a Leave</button>
   </div>
-  <button type="logout" onclick="document.location='index.html'">Logout</button>
+  <button type="logout" onclick="document.location='logout.php'">Logout</button>
 </body>
 
 </html>
