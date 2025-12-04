@@ -67,6 +67,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <li class="nav-button"><a href="/Payroll/payroll.php">Employee Payroll Table</a></li>
                 <li class="nav-button"><a href="/Payroll/incentives.php">Manage Incentives    </a></li>
                 <li class="nav-button"><a href="/Payroll/employee.php">Employee Management</a></li>
+                <li class="nav-button"><a href="/Payroll/manage_accounts.php">Manage Accounts(Passwords)</a></li>
             </ul> 
         </nav>
         
