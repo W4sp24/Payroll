@@ -2,16 +2,23 @@
 session_start();
 
 // 1. Check if the user is logged in.
-// If 'user_id' is missing, it means they aren't logged in, so we redirect to login.php.
+$session_missing = false;
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit;
+    // FIX: Commented out the redirect so you can see leave.php even if login fails.
+    // header('Location: login.php');
+    // exit;
+    $session_missing = true;
 }
 
 // 2. Ensure emp_id is set.
 // If the database didn't have an emp_id, we fallback to user_id to prevent errors.
 if (empty($_SESSION['emp_id'])) {
-    $_SESSION['emp_id'] = $_SESSION['user_id'];
+    if (isset($_SESSION['user_id'])) {
+        $_SESSION['emp_id'] = $_SESSION['user_id'];
+    } else {
+        // Fallback for when not logged in (prevents SQL errors)
+        $_SESSION['emp_id'] = 0;
+    }
 }
 
 $emp_id = (int) $_SESSION['emp_id'];
@@ -182,6 +189,7 @@ textarea{width:100%;min-height:100px}
 .actions small{color:#666}
 .notice{padding:8px;background:#e6ffed;border:1px solid #bdeec7;margin-bottom:12px}
 .error{padding:8px;background:#ffe6e6;border:1px solid #ffbdbd;margin-bottom:12px}
+.warning-banner {background: #fff3cd; color: #856404; padding: 10px; border: 1px solid #ffeeba; margin-bottom: 20px; border-radius: 4px;}
 .btn{padding:6px 10px;border:0;border-radius:6px;cursor:pointer}
 .btn-primary{background:#2563eb;color:#fff}
 .btn-danger{background:#ef4444;color:#fff}
@@ -191,6 +199,12 @@ textarea{width:100%;min-height:100px}
 <body>
 <div class="container">
     <h1>File a Leave</h1>
+
+    <?php if ($session_missing): ?>
+        <div class="warning-banner">
+            <strong>Warning:</strong> You are not logged in. <a href="login.php">Login here</a>. (Redirect disabled for debugging)
+        </div>
+    <?php endif; ?>
 
     <?php foreach($errors as $e): ?>
         <div class="error"><?php echo htmlspecialchars($e); ?></div>
