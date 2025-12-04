@@ -1,16 +1,22 @@
 <?php
 session_start();
 
-// Basic auth check
-if (!isset($_SESSION['emp_id'])) {
-    
+// FIX: Check for user_id (which is set in login.php) instead of just emp_id.
+// This ensures that if you can access user.php, you can access this page too.
+if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
 
+// FIX: If emp_id wasn't set in the session (e.g. database value was null),
+// fallback to using the user_id so the script doesn't crash.
+if (empty($_SESSION['emp_id'])) {
+    $_SESSION['emp_id'] = $_SESSION['user_id'];
+}
+
 $emp_id = (int) $_SESSION['emp_id'];
 
-// DB connection (reuse your connection settings) 
+// DB connection
 $dbUser = 'root';
 $dbPass = '';
 $dbName = 'project';
@@ -31,11 +37,9 @@ try {
     die('DB Connection failed: ' . $e->getMessage());
 }
 
-
 function post($key) {
     return isset($_POST[$key]) ? trim($_POST[$key]) : null;
 }
-
 
 $errors = [];
 $messages = [];
@@ -44,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = post('action') ?? '';
 
     if ($action === 'create') {
-        
         $lve_type = post('lve_type') ?: 'UNPAID';
         $lve_start_date = post('lve_start_date') ?: date('Y-m-d');
         $lve_duration = post('lve_duration') ?: '00:00:00'; 
@@ -55,20 +58,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($errors)) {
-            $sql = "INSERT INTO leave_request (EMP_ID, LVE_TYPE, LVE_DATE_FILLED, LVE_DURATION, LVE_REASON, LVE_STATUS)
-                    VALUES (:emp_id, :lve_type, :date_filled, :duration, :reason, 'PENDING')";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                'emp_id' => $emp_id,
-                'lve_type' => $lve_type,
-                'date_filled' => $lve_start_date,
-                'duration' => $lve_duration,
-                'reason' => $lve_reason
-            ]);
-            $messages[] = "Leave submitted successfully.";
-            // redirect to avoid form resubmit
-            header("Location: leave.php");
-            exit;
+            // FIX: Added error handling for SQL execution
+            try {
+                $sql = "INSERT INTO leave_request (EMP_ID, LVE_TYPE, LVE_DATE_FILLED, LVE_DURATION, LVE_REASON, LVE_STATUS)
+                        VALUES (:emp_id, :lve_type, :date_filled, :duration, :reason, 'PENDING')";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute([
+                    'emp_id' => $emp_id,
+                    'lve_type' => $lve_type,
+                    'date_filled' => $lve_start_date,
+                    'duration' => $lve_duration,
+                    'reason' => $lve_reason
+                ]);
+                $messages[] = "Leave submitted successfully.";
+                header("Location: leave.php");
+                exit;
+            } catch (PDOException $e) {
+                $errors[] = "Error submitting leave: " . $e->getMessage();
+            }
         }
     }
 
@@ -78,7 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $lve_type = post('lve_type') ?: 'UNPAID';
         $lve_duration = post('lve_duration') ?: '00:00:00';
 
-        // Only allow updating if this leave belongs to user AND status is PENDING
         $stmt = $pdo->prepare("SELECT LVE_STATUS FROM leave_request WHERE LVE_ID = :id AND EMP_ID = :emp_id LIMIT 1");
         $stmt->execute(['id' => $lve_id, 'emp_id' => $emp_id]);
         $row = $stmt->fetch();
@@ -107,7 +113,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     elseif ($action === 'delete') {
         $lve_id = (int) post('lve_id');
 
-        // Only allow delete if PENDING
         $stmt = $pdo->prepare("SELECT LVE_STATUS FROM leave_request WHERE LVE_ID = :id AND EMP_ID = :emp_id LIMIT 1");
         $stmt->execute(['id' => $lve_id, 'emp_id' => $emp_id]);
         $row = $stmt->fetch();
@@ -126,7 +131,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-//For edit form prefill (GET ?edit=ID)
 $editing = false;
 $edit_row = null;
 if (isset($_GET['edit'])) {
@@ -142,14 +146,19 @@ if (isset($_GET['edit'])) {
     }
 }
 
-//Fetch user's leaves
-$stmt = $pdo->prepare("SELECT lr.*, e.EMP_NAME
-                       FROM leave_request lr
-                       LEFT JOIN employee e ON lr.EMP_ID = e.EMP_ID
-                       WHERE lr.EMP_ID = :emp_id
-                       ORDER BY lr.LVE_DATE_FILLED DESC, lr.LVE_ID DESC");
-$stmt->execute(['emp_id' => $emp_id]);
-$leaves = $stmt->fetchAll();
+// Fetch user's leaves
+// Wrapped in try/catch to handle cases where 'employee' table might not link correctly
+try {
+    $stmt = $pdo->prepare("SELECT lr.*
+                           FROM leave_request lr
+                           WHERE lr.EMP_ID = :emp_id
+                           ORDER BY lr.LVE_DATE_FILLED DESC, lr.LVE_ID DESC");
+    $stmt->execute(['emp_id' => $emp_id]);
+    $leaves = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $errors[] = "Could not fetch leaves. Error: " . $e->getMessage();
+    $leaves = [];
+}
 
 ?>
 <!doctype html>

@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
 
-            // Use prepared statements to avoid SQL injection
+            // Fetch emp_id if it exists
             $stmt = $pdo->prepare('SELECT id, emp_id, password FROM users WHERE username = ? LIMIT 1');
 
             $stmt->execute([$username]);
@@ -40,11 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (password_verify($passwordInput, $passwordHash)) {
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $row['id'];
-                    // If users table has emp_id column:
-                    $_SESSION['emp_id'] = $row['emp_id']; //required by leave.php
                     $_SESSION['username'] = $username;
+                    
+                    // FIX: Ensure emp_id is set even if NULL in database
+                    // If emp_id is null, we fall back to the user ID to prevent session errors in leave.php
+                    $_SESSION['emp_id'] = !empty($row['emp_id']) ? $row['emp_id'] : $row['id'];
+                    
                     header('Location: user.php');
-                exit;
+                    exit;
 
                 } else {
                     $error = 'Invalid username or password.';
