@@ -50,3 +50,27 @@ h1 {
                 .employee-payroll-table th,
                 .employee-payroll-table td { padding: 8px; font-size: 13px; }
             }
+
+.form-container {
+    border:1px solid black;
+    width:300px;
+    margin: 100px auto;
+    padding:30px;
+}
+
+.payroll-form{
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+.process-btn {
+    display:block;
+    margin:10px auto;
+}
+
+
+.btn{
+    margin:10px auto;
+    width:fit-content;
+}

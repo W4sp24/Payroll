@@ -1,7 +1,7 @@
 <?php 
 //SQL CONNECTION ------------------------------------------------------
 $user = 'root';
-$password = ''; // WARNING: Using root with no password is a security risk!
+$password = ''; 
 $database = 'project';
 $servername = 'localhost'; 
 $port = '3306'; 
@@ -9,20 +9,56 @@ $charset = 'utf8mb4';
 $dsn = "mysql:host=$servername;port=$port;dbname=$database;charset=$charset";
 
 
-// 2. PDO Options (These are fine)
 $options = [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, 
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,     
     PDO::ATTR_EMULATE_PREPARES   => false,
 ];
 
-// 3. ESTABLISH THE PDO CONNECTION ($pdo)
 try {
     $pdo = new PDO($dsn, $user, $password, $options);
 } catch (\PDOException $e) {
 
     die('Connection Error: ' . $e->getMessage());
 }
+
+
+
+
+// Data manipulation logic
+
+if($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $employee_id = $_POST['id'] ?? $_POST['emp_id'] ?? null; // to avoid invalid data type input
+
+    if (!is_numeric($employee_id)) {
+        echo '<script type="text/javascript">';
+        echo 'alert("Invalid employee ID. Please enter a numeric ID.");';
+        echo 'window.history.back();';
+        echo '</script>';
+        exit;
+    }
+
+    if(isset($_GET['action'])) {
+        $action = $_GET['action'];
+        if($action === 'approve' && isset($_POST['id'])) {
+            $emp_id = $_POST['id'];
+            $stmt = $pdo->prepare("UPDATE leave_request SET LVE_STATUS = 'APPROVED' WHERE EMP_ID = :emp_id");
+            $stmt->execute(['emp_id' => $emp_id]);
+        } elseif($action === 'reject' && isset($_POST['emp_id'])) {
+            $emp_id = $_POST['emp_id'];
+            $stmt = $pdo->prepare("UPDATE leave_request SET LVE_STATUS = 'REJECTED' WHERE EMP_ID = :emp_id");
+            $stmt->execute(['emp_id' => $emp_id]);
+        }
+    }
+}
+
+
+
+
+
+
+
 
 ?>
 
@@ -95,12 +131,12 @@ try {
                     </table>
                 </div>
                 <div class='actions'>
-                        <form>
+                        <form action ='/Payroll/admin.php?action=approve' method='post'>
                             <label for='emp-id-input'>EMPLOYEE ID:</label>
-                            <input type='text' id='emp-id-input' name='emp_id'/>
+                            <input type='text' id='emp-id-input' name='id'/>
                             <button type='submit'>Approve Leave</button>
                         </form>
-                        <form>
+                        <form action ='/Payroll/admin.php?action=reject' method='post'>
                             <label for='emp-id-input'>EMPLOYEE ID:</label>
                             <input type='text' id='emp-id-input' name='emp_id'/>
                             <button type='submit'>Reject Leave</button>
