@@ -37,11 +37,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($row) {
                 $passwordHash = $row['password'];
                 if (password_verify($passwordInput, $passwordHash)) {
+                    // after verifying password...
                     session_regenerate_id(true);
                     $_SESSION['user_id'] = $row['id'];
+                    // If users table has emp_id column:
+                    $_SESSION['emp_id'] = $row['emp_id']; // <-- required by leave.php
                     $_SESSION['username'] = $username;
                     header('Location: user.html');
-                    exit;
+                exit;
+
                 } else {
                     $error = 'Invalid username or password.';
                 }
