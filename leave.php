@@ -1,15 +1,15 @@
 <?php
 session_start();
 
-// FIX: Check for user_id (which is set in login.php) instead of just emp_id.
-// This ensures that if you can access user.php, you can access this page too.
+// 1. Check if the user is logged in.
+// If 'user_id' is missing, it means they aren't logged in, so we redirect to login.php.
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
 
-// FIX: If emp_id wasn't set in the session (e.g. database value was null),
-// fallback to using the user_id so the script doesn't crash.
+// 2. Ensure emp_id is set.
+// If the database didn't have an emp_id, we fallback to user_id to prevent errors.
 if (empty($_SESSION['emp_id'])) {
     $_SESSION['emp_id'] = $_SESSION['user_id'];
 }
@@ -44,9 +44,11 @@ function post($key) {
 $errors = [];
 $messages = [];
 
+// Handle Form Submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = post('action') ?? '';
 
+    // CREATE NEW LEAVE
     if ($action === 'create') {
         $lve_type = post('lve_type') ?: 'UNPAID';
         $lve_start_date = post('lve_start_date') ?: date('Y-m-d');
@@ -58,7 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($errors)) {
-            // FIX: Added error handling for SQL execution
             try {
                 $sql = "INSERT INTO leave_request (EMP_ID, LVE_TYPE, LVE_DATE_FILLED, LVE_DURATION, LVE_REASON, LVE_STATUS)
                         VALUES (:emp_id, :lve_type, :date_filled, :duration, :reason, 'PENDING')";
@@ -71,6 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'reason' => $lve_reason
                 ]);
                 $messages[] = "Leave submitted successfully.";
+                // Refresh to clear form
                 header("Location: leave.php");
                 exit;
             } catch (PDOException $e) {
@@ -79,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // UPDATE LEAVE
     elseif ($action === 'update') {
         $lve_id = (int) post('lve_id');
         $lve_reason = post('reason') ?: '';
@@ -110,6 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // DELETE LEAVE
     elseif ($action === 'delete') {
         $lve_id = (int) post('lve_id');
 
@@ -131,6 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Logic for Editing
 $editing = false;
 $edit_row = null;
 if (isset($_GET['edit'])) {
@@ -147,7 +152,6 @@ if (isset($_GET['edit'])) {
 }
 
 // Fetch user's leaves
-// Wrapped in try/catch to handle cases where 'employee' table might not link correctly
 try {
     $stmt = $pdo->prepare("SELECT lr.*
                            FROM leave_request lr
@@ -168,7 +172,6 @@ try {
 <title>My Leaves</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-/* small inline styles for quick drop-in */
 body{font-family: Arial, Helvetica, sans-serif; margin:20px; background:#f6f6f6}
 .container{max-width:900px;margin:0 auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 h1{margin-bottom:10px}

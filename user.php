@@ -1,8 +1,9 @@
 <?php
 session_start();
-// This check is correct
+
+// Ensure the user is logged in
 if (empty($_SESSION['user_id'])) {
-  header('Location: login.php'); // Changed index.html to login.php so it goes to the PHP logic
+  header('Location: login.php');
   exit;
 }
 ?>
@@ -17,18 +18,23 @@ if (empty($_SESSION['user_id'])) {
   <style>
     body { font-family: sans-serif; padding: 20px; }
     button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    .btn-group { margin: 20px 0; }
   </style>
 </head>
 
 <body>
   <h1 id="company">This is the Payroll Inc. control panel.</h1>
   <p>Welcome, <?php echo htmlspecialchars($_SESSION['username'] ?? 'User'); ?>!</p>
-  <div>
+  
+  <div class="btn-group">
       <button type="button">Time Out</button>
-      <!-- This link works now because leave.php has been fixed -->
-      <button type="button" onclick="document.location='leave.php'">File a Leave</button>
+      
+      <!-- FIX: This button now explicitly links to leave.php -->
+      <!-- We use window.location.href for a reliable redirect -->
+      <button type="button" onclick="window.location.href='leave.php'">File a Leave</button>
   </div>
-  <button type="button" onclick="document.location='logout.php'">Logout</button>
+  
+  <button type="button" onclick="window.location.href='logout.php'">Logout</button>
 </body>
 
 </html>
