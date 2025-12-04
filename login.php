@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // If users table has emp_id column:
                     $_SESSION['emp_id'] = $row['emp_id']; //required by leave.php
                     $_SESSION['username'] = $username;
-                    header('Location: user.html');
+                    header('Location: user.php');
                 exit;
 
                 } else {
