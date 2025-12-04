@@ -277,7 +277,7 @@ textarea{width:100%;min-height:100px}
             </tbody>
         </table>
     <?php endif; ?>
-    <p><a href="user.html">Return to menu</a></p>
+    <p><a href="user.php">Return to menu</a></p>
 </div>
 </body>
 </html>
