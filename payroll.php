@@ -23,6 +23,7 @@ try {
 }
 
 $tableName = 'payroll_computation_table';
+$totalExpense = 0;
 // Generate Payroll Logic
 if (isset($_GET['action']) && $_GET['action'] === 'generate') {
 
@@ -54,6 +55,24 @@ if (isset($_GET['action']) && $_GET['action'] === 'generate') {
         ]); 
 
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $sumSql = 'SELECT 
+                    SUM(ROUND(monthly_salary + total_incentives + total_paid_leaves, 2)) AS total_expense 
+                   FROM payroll_view 
+                   WHERE Pay_Period = :period 
+                   AND Pay_Month = :month 
+                   AND Pay_Year = :year';
+
+        $sumStmt = $pdo->prepare($sumSql);
+        $sumStmt->execute([
+            'period' => $selectedPeriod,
+            'month'  => $selectedMonth,
+            'year'   => $selectedYear
+        ]);
+
+        $sumResult = $sumStmt->fetch(PDO::FETCH_ASSOC);
+        $totalExpense = $sumResult['total_expense'] ?? 0;
+
     } else {
         $error = "Please select both a month and a period.";
     }
@@ -112,6 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             echo "<script>alert('Database Error: " . addslashes($e->getMessage()) . "');</script>";
         }
     }
+    
 }
 ?>
 <!DOCTYPE html>
@@ -122,7 +142,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 </head>
 <body>
-    <!-- add a wrapper and class to the form so CSS can target it -->
      <div class='back-btn'><a href='/Payroll/admin.php'><button>Back</button></a></div>
     <div class="form-container">
         <form class="payroll-form" action='payroll.php' method='GET'>
@@ -150,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         <tr>
                             <td><?php echo htmlspecialchars($row['Employee ID']); ?></td>
                             <td><?php echo htmlspecialchars($row['Employee_Name']); ?></td>
-                            <td>$<?php echo number_format($row['Gross Salary'], 2); ?></td>
+                            <td>₱<?php echo number_format($row['Gross Salary'], 2); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -164,13 +183,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <input type="hidden" name="h_period" value="<?php echo $selectedPeriod; ?>">
                 <button>Process</button>
             </form>
-
-        <div>
+        </div>
+        <div class=total-payroll-container><h3>Total Payroll: ₱<?php echo number_format($totalExpense, 2); ?> </h3></div>
     <?php elseif (isset($_GET['action'])): ?>
         <div style="text-align:center; color: red;">
             <p>No records found for this period.</p>
         </div>
     <?php endif; ?>
+    
 
 
 </body>   

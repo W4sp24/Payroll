@@ -21,7 +21,7 @@ h1 {
 
 .table-wrapper {
                 display: flex;
-                justify-content: center; /* center horizontally */
+                justify-content: center;
                 padding: 12px 0;
 }
 .employee-payroll-table {
@@ -80,4 +80,11 @@ h1 {
     margin:30px auto;
     
     width:fit-content;
+}
+
+.total-payroll-container {
+    margin:10px auto;
+    width:fit-content;
+   
+    
 }
