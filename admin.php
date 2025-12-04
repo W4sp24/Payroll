@@ -63,7 +63,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
             <ul class="nav-elements">
                 <li class="nav-button"><a href="/Payroll/payroll.php">Employee Payroll Table</a></li>
                 <li class="nav-button"><a href="#">Simlulate Attendance(FOR DEMO ONLY)</a></li>
-                <li class="nav-button"><a href="#">Employee Management</a></li>
+                <li class="nav-button"><a href="/Payroll/employee.php">Employee Management</a></li>
             </ul> 
         </nav>
         <div class='util-container'>

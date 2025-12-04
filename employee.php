@@ -86,6 +86,52 @@ try {
                     </table>
                 </div>
             </div>
+            <div class='table-employees'>
+                <div class="table-wrapper">
+                    <table class="table">
+                        <caption>Department List</caption> <thead>
+                            <tr>
+                                <th>DEPT ID</th>
+                                <th>DEPT NAME</th>
+                                </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            try {
+                                // 1. UPDATED QUERY
+                                // We select * (all columns). 
+                                // Make sure your <th> tags above match the number of columns in your DB.
+                                $stmt = $pdo->query("SELECT * FROM department");
+                                
+                                $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                
+                                if (!empty($results)) {
+                                    foreach ($results as $row) {
+                                        echo '<tr>';
+                                        // 2. THE LOOP
+                                        // This generic loop is perfect. It will automatically create a <td>
+                                        // for every column found in the 'department' table.
+                                        foreach ($row as $cell) {
+                                            echo '<td>' . htmlspecialchars($cell) . '</td>';
+                                        }
+                                        echo '</tr>';
+                                    }
+                                } else {
+                                    // 3. UPDATED COLSPAN
+                                    // Change this number to match the number of columns in your department table
+                                    echo '<tr><td colspan="2">No departments found</td></tr>';
+                                }
+                            } catch (\PDOException $e) {
+                                echo '<tr><td colspan="2">Error: ' . htmlspecialchars($e->getMessage()) . '</td></tr>';
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class='data-manipulation'>
+            
         </div>
 
     </body>
