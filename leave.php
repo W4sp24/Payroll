@@ -7,10 +7,11 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
+// 2. Employee Link Check
 $is_employee = !empty($_SESSION['emp_id']);
 $emp_id = $is_employee ? (int)$_SESSION['emp_id'] : 0;
 
-
+// DB connection settings
 $dbUser = 'root';
 $dbPass = '';
 $dbName = 'project';
@@ -38,7 +39,7 @@ function post($key) {
 $errors = [];
 $messages = [];
 
-
+// --- POST REQUEST HANDLING (Create, Update, Delete) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_employee) {
     
     $action = post('action') ?? '';
@@ -50,6 +51,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_employee) {
         $lve_duration = post('lve_duration') ?: '00:00:00'; 
         $lve_reason = post('reason') ?: '';
 
+        // VALIDATION: Check for negative duration or invalid format
+        if (strpos($lve_duration, '-') !== false) {
+            $errors[] = "Duration cannot be negative.";
+        }
+        
         if ($lve_reason === '') {
             $errors[] = "Please enter a reason for the leave.";
         }
@@ -57,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_employee) {
         if (empty($errors)) {
             try {
                 $sql = "INSERT INTO leave_request (EMP_ID, LVE_TYPE, LVE_DATE_FILLED, LVE_DURATION, LVE_REASON, LVE_STATUS)
-                        VALUES (:emp_id, :lve_type, :date_filled, :duration, :reason, 'Pending')";
+                        VALUES (:emp_id, :lve_type, :date_filled, :duration, :reason, 'PENDING')";
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
                     'emp_id' => $emp_id,
@@ -75,56 +81,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_employee) {
         }
     }
 
-
+    // 2. UPDATE
     elseif ($action === 'update') {
         $lve_id = (int) post('lve_id');
         $lve_reason = post('reason') ?: '';
         $lve_type = post('lve_type') ?: 'UNPAID';
         $lve_duration = post('lve_duration') ?: '00:00:00';
 
-
-        $stmt = $pdo->prepare("SELECT LVE_STATUS FROM leave_request WHERE LVE_ID = :id AND EMP_ID = :emp_id LIMIT 1");
-        $stmt->execute(['id' => $lve_id, 'emp_id' => $emp_id]);
-        $row = $stmt->fetch();
-
-        if (!$row) {
-            $errors[] = "Leave not found or access denied.";
-        } elseif ($row['LVE_STATUS'] !== 'Pending') {
-            $errors[] = "You can only edit leaves that are still PENDING.";
+        // VALIDATION: Check for negative duration
+        if (strpos($lve_duration, '-') !== false) {
+            $errors[] = "Duration cannot be negative.";
         } else {
-  
-            $updateSql = "UPDATE leave_request 
-                          SET LVE_REASON = :reason, LVE_TYPE = :type, LVE_DURATION = :duration 
-                          WHERE LVE_ID = :id AND EMP_ID = :emp_id";
-            $stmt = $pdo->prepare($updateSql);
-            $stmt->execute([
-                'reason' => $lve_reason,
-                'type' => $lve_type,
-                'duration' => $lve_duration,
-                'id' => $lve_id,
-                'emp_id' => $emp_id
-            ]);
-            $messages[] = "Leave updated successfully.";
-            header("Location: leave.php");
-            exit;
+            // Check if leave exists and belongs to user and is PENDING
+            $stmt = $pdo->prepare("SELECT LVE_STATUS FROM leave_request WHERE LVE_ID = :id AND EMP_ID = :emp_id LIMIT 1");
+            $stmt->execute(['id' => $lve_id, 'emp_id' => $emp_id]);
+            $row = $stmt->fetch();
+
+            if (!$row) {
+                $errors[] = "Leave not found or access denied.";
+            } elseif ($row['LVE_STATUS'] !== 'PENDING') {
+                $errors[] = "You can only edit leaves that are still PENDING.";
+            } else {
+                // Perform Update
+                $updateSql = "UPDATE leave_request 
+                              SET LVE_REASON = :reason, LVE_TYPE = :type, LVE_DURATION = :duration 
+                              WHERE LVE_ID = :id AND EMP_ID = :emp_id";
+                $stmt = $pdo->prepare($updateSql);
+                $stmt->execute([
+                    'reason' => $lve_reason,
+                    'type' => $lve_type,
+                    'duration' => $lve_duration,
+                    'id' => $lve_id,
+                    'emp_id' => $emp_id
+                ]);
+                $messages[] = "Leave updated successfully.";
+                header("Location: leave.php");
+                exit;
+            }
         }
     }
 
- 
+    // 3. DELETE
     elseif ($action === 'delete') {
         $lve_id = (int) post('lve_id');
 
-  
+        // Check permissions
         $stmt = $pdo->prepare("SELECT LVE_STATUS FROM leave_request WHERE LVE_ID = :id AND EMP_ID = :emp_id LIMIT 1");
         $stmt->execute(['id' => $lve_id, 'emp_id' => $emp_id]);
         $row = $stmt->fetch();
 
         if (!$row) {
             $errors[] = "Leave not found or access denied.";
-        } elseif ($row['LVE_STATUS'] !== 'Pending') {
+        } elseif ($row['LVE_STATUS'] !== 'PENDING') {
             $errors[] = "You cannot delete leaves that have already been processed.";
         } else {
-
+            // Perform Delete
             $stmt = $pdo->prepare("DELETE FROM leave_request WHERE LVE_ID = :id AND EMP_ID = :emp_id");
             $stmt->execute(['id' => $lve_id, 'emp_id' => $emp_id]);
             $messages[] = "Leave deleted successfully.";
@@ -134,26 +145,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $is_employee) {
     }
 }
 
-
+// --- GET REQUEST HANDLING (Edit Mode) ---
 $editing = false;
 $edit_row = null;
 
 if (isset($_GET['edit']) && $is_employee) {
     $edit_id = (int) $_GET['edit'];
-
+    // Fetch the specific row to populate the form
     $stmt = $pdo->prepare("SELECT * FROM leave_request WHERE LVE_ID = :id AND EMP_ID = :emp_id LIMIT 1");
     $stmt->execute(['id' => $edit_id, 'emp_id' => $emp_id]);
     $edit_row = $stmt->fetch();
 
-    if ($edit_row && $edit_row['LVE_STATUS'] === 'Pending') {
+    if ($edit_row && $edit_row['LVE_STATUS'] === 'PENDING') {
         $editing = true;
     } else {
-
+        // If not found or not pending, cancel edit mode
         $errors[] = "Cannot edit this leave (it might not exist, or is already Approved/Rejected).";
     }
 }
 
-
+// --- FETCH ALL LEAVES FOR TABLE ---
 $leaves = [];
 if ($is_employee) {
     try {
@@ -178,16 +189,16 @@ if ($is_employee) {
     body{font-family: Arial, Helvetica, sans-serif; margin:20px; background:#f6f6f6}
     .container{max-width:900px;margin:0 auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
     
-
+    /* Alerts */
     .error{padding:15px;background:#ffe6e6;border:1px solid #ffbdbd;margin-bottom:12px; border-left: 5px solid #d00; color: #900;}
     .notice{padding:15px;background:#e6ffed;border:1px solid #bdeec7;margin-bottom:12px; border-left: 5px solid #0d0; color: #060;}
     
-
+    /* Form */
     form { background: #fafafa; padding: 15px; border: 1px solid #eee; margin-bottom: 30px; }
     label { font-weight: bold; display: block; margin-bottom: 5px; }
     textarea, input, select { width: 100%; padding: 8px; box-sizing: border-box; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px;}
     
-   
+    /* Buttons */
     .btn{padding:8px 15px;border:0;border-radius:4px;cursor:pointer; font-size: 14px; text-decoration: none; display: inline-block;}
     .btn-primary{background:#2563eb;color:#fff}
     .btn-primary:hover{background:#1d4ed8}
@@ -230,7 +241,7 @@ if ($is_employee) {
         <?php endforeach; ?>
 
 
-
+        <!-- DYNAMIC FORM: Shows Create OR Edit based on logic -->
         <?php if ($editing && $edit_row): ?>
             <!-- EDIT MODE -->
             <form method="post" action="leave.php">
@@ -246,7 +257,8 @@ if ($is_employee) {
                 </select>
 
                 <label>Duration (HH:MM:SS):</label>
-                <input name="lve_duration" value="<?php echo htmlspecialchars($edit_row['LVE_DURATION']); ?>" required>
+                <!-- Added pattern to encourage correct format -->
+                <input type="text" name="lve_duration" value="<?php echo htmlspecialchars($edit_row['LVE_DURATION']); ?>" placeholder="08:00:00" required>
 
                 <label>Reason:</label>
                 <textarea name="reason" rows="4" required><?php echo htmlspecialchars($edit_row['LVE_REASON']); ?></textarea>
@@ -256,7 +268,7 @@ if ($is_employee) {
             </form>
 
         <?php else: ?>
-   
+            <!-- CREATE MODE -->
             <form method="post" action="leave.php">
                 <h3 style="margin-top:0">New Leave Request</h3>
                 <input type="hidden" name="action" value="create">
@@ -270,8 +282,8 @@ if ($is_employee) {
                 <label>Start Date:</label>
                 <input type="date" name="lve_start_date" value="<?php echo date('Y-m-d'); ?>" required>
 
-                <label>Duration (Days):</label>
-                <input  type = number name="lve_duration">
+                <label>Duration (HH:MM:SS):</label>
+                <input type="text" name="lve_duration" value="08:00:00" placeholder="08:00:00" required>
 
                 <label>Reason:</label>
                 <textarea name="reason" rows="4" required></textarea>
@@ -281,6 +293,7 @@ if ($is_employee) {
         <?php endif; ?>
 
 
+        <!-- TABLE OF LEAVES -->
         <h2>My Submitted Leaves</h2>
         <?php if (empty($leaves)): ?>
             <p>No leaves found.</p>
@@ -309,10 +322,11 @@ if ($is_employee) {
                             </span>
                         </td>
                         <td>
-                            <?php if ($r['LVE_STATUS'] === 'Pending'): ?>
+                            <?php if ($r['LVE_STATUS'] === 'PENDING'): ?>
+                                <!-- Edit Button (Link) -->
                                 <a href="leave.php?edit=<?php echo $r['LVE_ID']; ?>" class="btn btn-edit">Edit</a>
 
-                            
+                                <!-- Delete Button (Form) -->
                                 <form method="post" action="leave.php" style="display:inline" onsubmit="return confirm('Are you sure you want to DELETE this leave?');">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="lve_id" value="<?php echo $r['LVE_ID']; ?>">
